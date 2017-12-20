@@ -1,6 +1,7 @@
 class object {
 	constructor(){
 		this.composite = null;
+		this.inWorld = false;
 	}
 	
 	getAllBodies(){
@@ -11,8 +12,13 @@ class object {
 		var tpos = keeppos ? this.getPos() : null;
 		this.composite = composite;
 		
+		if(tpos) this.setPos(tpos);
+		return this;
+	}
+	
+	setChildrenParent(){
 		// set gameObject parent of bodies
-		var bods = Matter.Composite.allBodies(this.composite);
+		var bods = this.getAllBodies();
 		for(var i = bods.length - 1; i >= 0; i--)
 			bods[i].gameObject = this;
 		// set gameObject parent of composites
@@ -20,9 +26,14 @@ class object {
 		for(var i = comps.length - 1;  i >= 0; i--)
 			comps[i].gameObject = this;
 		this.composite.gameObject = this;
-		
-		if(tpos) this.setPos(tpos);
-		return this;
+	}
+	
+	preAdd(){
+		this.setChildrenParent();
+		this.inWorld = true;
+	}
+	preRemove(){
+		this.inWorld = false;
 	}
 	
 	getPos(){
