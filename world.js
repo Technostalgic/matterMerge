@@ -1,15 +1,25 @@
-class world(){
+class world{
 	constructor(){
-		this.physEngine = Matter.Engine.Create();
+		this.physEngine = Matter.Engine.create();
 		this.physWorld = this.physEngine.world;
 		
+		this.terrain = [];
 		this.objList = [];
+	}
+	
+	getTimeScale(){
+		return this.physEngine.timing.timeScale;
+	}
+	setTimeScale(ts){
+		this.physEngine.timing.timeScale = ts;
 	}
 	
 	update(dt){
 		Matter.Engine.update(this.physEngine, dt);
 		for(var i = this.objList.length - 1; i >= 0; i--)
-			objList[i].update(dt);
+			this.objList[i].update(dt);
+		for(var i = this.terrain.length - 1; i >= 0; i--)
+			this.terrain[i].update(dt);
 	}
 	
 	add(obj){
@@ -23,8 +33,33 @@ class world(){
 		this.objList.splice(this.objList.indexOf(obj), 1);
 	}
 	
+	addTerrain(obj){
+		obj.preAdd();
+		Matter.World.addComposite(this.physWorld, obj);
+		this.terrain.push(obj);
+	}
+	removeTerrain(obj){
+		obj.preRemove();
+		Matter.World.remove(this.physWorld, obj);
+		this.terrain.splice(this.objList.indexOf(obj), 1);
+	}
+	
 	draw(ctx){
 		for(var i = this.objList.length - 1; i >= 0; i--)
-			objList[i].draw(ctx);
+			this.objList[i].draw(ctx);
+	}
+	
+	static withGround(groundY = 500, groundWidth = 1000){
+		var r = new world();
+		
+		var terrain = new object();
+		var tcomp = Matter.Composite.create();
+		Matter.Composite.addBody(tcomp, Matter.Bodies.rectangle(0, 0, groundWidth, 50));
+		terrain.setComposite(tcomp);
+		terrain.setStatic();
+		terrain.setPos(new vec2(0, groundY));
+		r.addTerrain(terrain);
+		
+		return r;
 	}
 }

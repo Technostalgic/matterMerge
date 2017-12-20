@@ -3,6 +3,7 @@
 	<script src="../matter.js"></script>
 	<script src="../polygons.min.js"></script>
 	<script src="../object.js"></script>
+	<script src="../world.js"></script>
 </head>
 <body style="color:white; background-color:black; margin:0; padding:0; text-align:center;">
 	<canvas id="canvas" width="600px" height="600px">
@@ -10,11 +11,19 @@
 		//example code here
 		var canvas = document.getElementById("canvas");
 		var context = canvas.getContext("2d");
+		var testWorld;
 		var testObj;
 		
 		function init(){
+			testWorld = world.withGround();
 			testObj = object.default();
 			testObj.setPos(new vec2(300, 300));
+			testWorld.add(testObj);
+		}
+		function update(){
+			testWorld.update(16.66667);
+			draw();
+			window.requestAnimationFrame(update);
 		}
 		function draw(){
 			context.fillStyle = "#333";
@@ -24,7 +33,7 @@
 		}
 		
 		init();
-		draw();
+		update();
 	</script>
 </body>
 </html>

@@ -36,6 +36,11 @@ class object {
 		this.inWorld = false;
 	}
 	
+	setStatic(isstatic = true){
+		var bods = this.getAllBodies();
+		for(var i = bods.length - 1; i >= 0; i--)
+			Matter.Body.setStatic(bods[i], isstatic);
+	}
 	getPos(){
 		//returns the centroid of all the bodies
 		if(!this.composite) return null;
