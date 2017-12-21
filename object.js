@@ -1,3 +1,30 @@
+function handleCollisionStart(event){
+	var pairs = event.pairs;
+	for(var i = pairs.length - 1; i >= 0; i--){
+		pairs[i].bodyA.gameObject.collisionStart(pairs[i].bodyA, pairs[i].bodyB, event);
+		pairs[i].bodyB.gameObject.collisionStart(pairs[i].bodyB, pairs[i].bodyA, event);
+	}
+}
+function handleCollisionActive(event){
+	var pairs = event.pairs;
+	for(var i = pairs.length - 1; i >= 0; i--){
+		pairs[i].bodyA.gameObject.collisionActive(pairs[i].bodyA, pairs[i].bodyB, event);
+		pairs[i].bodyB.gameObject.collisionActive(pairs[i].bodyB, pairs[i].bodyA, event);
+	}
+}
+function handleCollisionEnd(event){
+	var pairs = event.pairs;
+	for(var i = pairs.length - 1; i >= 0; i--){
+		pairs[i].bodyA.gameObject.collisionEnd(pairs[i].bodyA, pairs[i].bodyB, event);
+		pairs[i].bodyB.gameObject.collisionEnd(pairs[i].bodyB, pairs[i].bodyA, event);
+	}
+}
+function startHandlingCollisions(engine){
+	Matter.Events.on(engine, "collisionStart", handleCollisionStart);
+	Matter.Events.on(engine, "collisionActive", handleCollisionActive);
+	Matter.Events.on(engine, "collisionEnd", handleCollisionEnd);
+}
+
 class object {
 	constructor(){
 		this.composite = null;
@@ -41,6 +68,23 @@ class object {
 		for(var i = bods.length - 1; i >= 0; i--)
 			Matter.Body.setStatic(bods[i], isstatic);
 	}
+	setFriction(fric = null, air = null, staticf = null){
+		// sets all the child bodies' friction to the specified values of 
+		// friction, air friction, and static friction
+		var setter = {}
+		
+		if(fric != null) 
+			setter.friction = fric;
+		if(air != null)
+			setter.frictionAir = air;
+		if(staticf != null)
+			setter.frictionStatic = staticf;
+		
+		var bods = this.getAllBodies();
+		for(var i = bods.length - 1; i >= 0; i--)
+			Matter.Body.set(bods[i], setter);
+	}
+	
 	getPos(){
 		//returns the centroid of all the bodies
 		if(!this.composite) return null;
@@ -79,6 +123,10 @@ class object {
 		}
 		return this;
 	}
+	
+	collisionStart(thisBody, otherBody, e){}
+	collisionActive(thisBody, otherBody, e){}
+	collisionEnd(thisBody, otherBody, e){}
 	
 	update(dt){}
 	draw(ctx){

@@ -2,6 +2,7 @@ class world{
 	constructor(){
 		this.physEngine = Matter.Engine.create();
 		this.physWorld = this.physEngine.world;
+		startHandlingCollisions(this.physEngine);
 		
 		this.terrain = [];
 		this.objList = [];
@@ -37,7 +38,6 @@ class world{
 		obj.preAdd();
 		this.terrain.push(obj);
 		Matter.World.addComposite(this.physWorld, obj.composite);
-		console.log(this.terrain);
 	}
 	removeTerrain(obj){
 		obj.preRemove();
@@ -56,9 +56,9 @@ class world{
 		var r = new world();
 		
 		var terrain = new object();
-		terrain.setComposite(object.composite_rectangle(new vec2(groundWidth, 100))).setPos(new vec2(0, groundY));
-		terrain.setStatic();
+		terrain.setComposite(object.composite_rectangle(new vec2(groundWidth, 100)));
 		terrain.setPos(new vec2(0, groundY));
+		terrain.setStatic();
 		r.addTerrain(terrain);
 		
 		return r;
