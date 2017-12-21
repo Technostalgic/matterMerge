@@ -35,8 +35,9 @@ class world{
 	
 	addTerrain(obj){
 		obj.preAdd();
-		Matter.World.addComposite(this.physWorld, obj);
 		this.terrain.push(obj);
+		Matter.World.addComposite(this.physWorld, obj.composite);
+		console.log(this.terrain);
 	}
 	removeTerrain(obj){
 		obj.preRemove();
@@ -45,11 +46,13 @@ class world{
 	}
 	
 	draw(ctx){
+		for(var i = this.terrain.length  - 1; i >= 0; i--)
+			this.terrain[i].draw(ctx);
 		for(var i = this.objList.length - 1; i >= 0; i--)
 			this.objList[i].draw(ctx);
 	}
 	
-	static withGround(groundY = 500, groundWidth = 1000){
+	static withGround(groundY = 500, groundWidth = 10000){
 		var r = new world();
 		
 		var terrain = new object();
