@@ -56,9 +56,7 @@ class world{
 		var r = new world();
 		
 		var terrain = new object();
-		var tcomp = Matter.Composite.create();
-		Matter.Composite.addBody(tcomp, Matter.Bodies.rectangle(0, 0, groundWidth, 50));
-		terrain.setComposite(tcomp);
+		terrain.setComposite(object.composite_rectangle(new vec2(groundWidth, 100))).setPos(new vec2(0, groundY));
 		terrain.setStatic();
 		terrain.setPos(new vec2(0, groundY));
 		r.addTerrain(terrain);

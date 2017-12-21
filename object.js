@@ -137,4 +137,13 @@ class object {
 		
 		return r;
 	}
+
+	static composite_fromBody(body){
+		var r = Matter.Composite.create();
+		Matter.Composite.addBody(r, body);
+		return r;
+	}
+	static composite_rectangle(size = new vec2(30, 25)){
+		return object.composite_fromBody(Matter.Bodies.rectangle(0, 0, size.x, size.y));
+	}
 }
