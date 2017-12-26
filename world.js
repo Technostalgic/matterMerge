@@ -1,3 +1,5 @@
+// A physics world structure
+// contains a Matter.World and Matter.Engine object
 class world{
 	constructor(){
 		this.physEngine = Matter.Engine.create();

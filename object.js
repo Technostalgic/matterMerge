@@ -19,12 +19,16 @@ function handleCollisionEnd(event){
 		pairs[i].bodyB.gameObject.collisionEnd(pairs[i].bodyB, pairs[i].bodyA, event);
 	}
 }
+
+// must be called during game initialization otherwise object.collisionStart/Active/End 
+// will never fire
 function startHandlingCollisions(engine){
 	Matter.Events.on(engine, "collisionStart", handleCollisionStart);
 	Matter.Events.on(engine, "collisionActive", handleCollisionActive);
 	Matter.Events.on(engine, "collisionEnd", handleCollisionEnd);
 }
 
+// a physics object wrapper for Matter.Composite
 class object {
 	constructor(){
 		this.composite = null;
@@ -179,9 +183,7 @@ class object {
 	static default(){
 		var r = new object();
 		
-		var comp = Matter.Composite.create();
-		Matter.Composite.add(comp, Matter.Bodies.rectangle(0, 0, 10, 10));
-		r.setComposite(comp);
+		r.setComposite(object.composite_rectangle());
 		
 		return r;
 	}
