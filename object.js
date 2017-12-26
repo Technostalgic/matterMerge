@@ -71,6 +71,7 @@ class object {
 		var bods = this.getAllBodies();
 		for(var i = bods.length - 1; i >= 0; i--)
 			Matter.Body.setStatic(bods[i], isstatic);
+		return this;
 	}
 	setFriction(fric = null, air = null, staticf = null){
 		// sets all the child bodies' friction to the specified values of 
@@ -132,7 +133,7 @@ class object {
 	collisionActive(thisBody, otherBody, e){}
 	collisionEnd(thisBody, otherBody, e){}
 	
-	update(dt){}
+	update(ts){}
 	draw(ctx){
 		if(!this.composite) return;
 		

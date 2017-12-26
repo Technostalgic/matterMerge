@@ -10,19 +10,19 @@ class world{
 		this.objList = [];
 	}
 	
-	getTimeScale(){
+	getTimescale(){
 		return this.physEngine.timing.timeScale;
 	}
-	setTimeScale(ts){
+	setTimescale(ts){
 		this.physEngine.timing.timeScale = ts;
 	}
 	
 	update(dt){
 		Matter.Engine.update(this.physEngine, dt);
 		for(var i = this.objList.length - 1; i >= 0; i--)
-			this.objList[i].update(dt);
+			this.objList[i].update(this.getTimescale());
 		for(var i = this.terrain.length - 1; i >= 0; i--)
-			this.terrain[i].update(dt);
+			this.terrain[i].update(this.getTimescale());
 	}
 	
 	add(obj){
@@ -48,20 +48,23 @@ class world{
 	}
 	
 	draw(ctx){
-		for(var i = this.terrain.length  - 1; i >= 0; i--)
-			this.terrain[i].draw(ctx);
 		for(var i = this.objList.length - 1; i >= 0; i--)
 			this.objList[i].draw(ctx);
+		for(var i = this.terrain.length  - 1; i >= 0; i--)
+			this.terrain[i].draw(ctx);
 	}
 	
-	static withGround(groundY = 500, groundWidth = 10000){
+	static withBounds(bounds, ceiling = true, walls = true){
 		var r = new world();
+		var thickness = 30;
 		
-		var terrain = new object();
-		terrain.setComposite(object.composite_rectangle(new vec2(groundWidth, 100)));
-		terrain.setPos(new vec2(0, groundY));
-		terrain.setStatic();
-		r.addTerrain(terrain);
+		if(walls){
+			r.addTerrain((new object()).setComposite(object.composite_rectangle(new vec2(thickness, bounds.height()))).setPos(new vec2(bounds.left(), bounds.center().y)).setStatic());
+			r.addTerrain((new object()).setComposite(object.composite_rectangle(new vec2(thickness, bounds.height()))).setPos(new vec2(bounds.right(), bounds.center().y)).setStatic());
+		}
+		if(ceiling)
+			r.addTerrain((new object()).setComposite(object.composite_rectangle(new vec2(bounds.width(), thickness))).setPos(new vec2(bounds.center().x, bounds.top())).setStatic());
+		r.addTerrain((new object()).setComposite(object.composite_rectangle(new vec2(bounds.width(), thickness))).setPos(new vec2(bounds.center().x, bounds.bottom())).setStatic());
 		
 		return r;
 	}
