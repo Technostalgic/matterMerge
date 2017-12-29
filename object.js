@@ -38,6 +38,9 @@ class object {
 	getAllBodies(){
 		return Matter.Composite.allBodies(this.composite);
 	}
+	getFirstBody(){
+		return this.composite.bodies[0];
+	}
 	setComposite(composite, keeppos = true){
 		//if keeppos = true, keep the current object position, otherwise use the given composite's position
 		var tpos = keeppos ? this.getPos() : null;
@@ -48,11 +51,11 @@ class object {
 	}
 	
 	setChildrenParent(){
-		// set gameObject parent of bodies
+		// set gameObject parent of bodies to this
 		var bods = this.getAllBodies();
 		for(var i = bods.length - 1; i >= 0; i--)
 			bods[i].gameObject = this;
-		// set gameObject parent of composites
+		// set gameObject parent of composites to this
 		var comps = Matter.Composite.allComposites(this.composite);
 		for(var i = comps.length - 1;  i >= 0; i--)
 			comps[i].gameObject = this;
@@ -128,6 +131,14 @@ class object {
 		}
 		return this;
 	}
+	getAng(){
+		return this.getFirstBody().angle;
+	}
+	setAng(ang){
+		var bods = this.getAllBodies();
+		for(var i = bods.length - 1; i >= 0; i--)
+			Matter.Body.setAngle(bods[i], ang);
+	}
 	
 	collisionStart(thisBody, otherBody, e){}
 	collisionActive(thisBody, otherBody, e){}
@@ -178,6 +189,14 @@ class object {
 		}
 	}
 	
+	trackPreviousVelocities(){
+		// if used, call this method at the very END of this.update()
+		var bods = this.getAllBodies();
+		for(var i = bods.length - 1; i >= 0; i--){
+			bods[i]._prevVel = { x: bods[i].velocity.x, y: bods[i].velocity.y };
+		}
+	}
+	
 	static empty(){
 		return new object();
 	}
@@ -194,7 +213,86 @@ class object {
 		Matter.Composite.addBody(r, body);
 		return r;
 	}
-	static composite_rectangle(size = new vec2(30, 25)){
-		return object.composite_fromBody(Matter.Bodies.rectangle(0, 0, size.x, size.y));
+	static composite_rectangle(size = new vec2(50, 25)){
+		var rect = Matter.Bodies.rectangle(0, 0, size.x, size.y);
+		return object.composite_fromBody(rect);
+	}
+}
+
+class destructable extends object{
+	constructor(){
+		super();
+		this.col = "#000";
+	}
+	
+	update(ts){
+		var acc = this.getBodyAcceleration(this.getFirstBody());
+		if(acc.distance() > 0.1)
+			console.log(acc.distance());
+		var emph = acc.distance() * 200;
+		this.col = "rgb("+ emph +","+ emph +","+ emph +")";
+		
+		this.trackPreviousVelocities();
+	}
+	
+	getBodyAcceleration(body){
+		if(!body) body = this.getFirstBody();
+		if(!body._prevVel) return new vec2();
+		return vec2.fromAnonObj(body.velocity).minus(vec2.fromAnonObj(body._prevVel));
+	}
+	
+	collisionActive(thisBody, otherBody, e){
+	}
+	
+	draw(ctx){
+		if(!this.composite) return;
+		
+		var fillCol = this.col;
+		var lineCol = "#fff";
+		var lineWidth = 2;
+		
+		var bodies = this.getAllBodies();
+		for(var i0 = bodies.length - 1; i0 >= 0; i0--){
+			for(var i1 = bodies[i0].parts.length - 1; i1 >= 0; i1--){
+				ctx.fillStyle = fillCol;
+				ctx.strokeStyle = lineCol;
+				ctx.lineWidth = lineWidth;
+				ctx.beginPath();
+				
+				var start = bodies[i0].parts[i1].vertices[0];
+				ctx.moveTo(start.x, start.y);
+				for(var i2 = bodies[i0].parts[i1].vertices.length - 1; i2 >= 0; i2--){
+					var vtx = bodies[i0].parts[i1].vertices[i2];
+					ctx.lineTo(vtx.x, vtx.y);
+				}
+				ctx.closePath();
+				ctx.fill();
+			}
+		}
+		for(var i0 = bodies.length - 1; i0 >= 0; i0--){
+			for(var i1 = bodies[i0].parts.length - 1; i1 >= 0; i1--){
+				ctx.fillStyle = fillCol;
+				ctx.strokeStyle = lineCol;
+				ctx.lineWidth = lineWidth;
+				ctx.beginPath();
+				
+				var start = bodies[i0].parts[i1].vertices[0];
+				ctx.moveTo(start.x, start.y);
+				for(var i2 = bodies[i0].parts[i1].vertices.length - 1; i2 >= 0; i2--){
+					var vtx = bodies[i0].parts[i1].vertices[i2];
+					ctx.lineTo(vtx.x, vtx.y);
+				}
+				ctx.closePath();
+				ctx.stroke();
+			}
+		}
+	}
+	
+	static default(){
+		var r = new destructable();
+		
+		r.setComposite(object.composite_rectangle());
+		
+		return r;
 	}
 }

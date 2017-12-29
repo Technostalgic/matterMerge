@@ -22,11 +22,11 @@ class world{
 	}
 	
 	update(dt){
-		Matter.Engine.update(this.physEngine, dt);
 		for(var i = this.objList.length - 1; i >= 0; i--)
 			this.objList[i].update(this.getTimescale());
 		for(var i = this.terrain.length - 1; i >= 0; i--)
 			this.terrain[i].update(this.getTimescale());
+		Matter.Engine.update(this.physEngine, dt);
 	}
 	
 	add(obj){

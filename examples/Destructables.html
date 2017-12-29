@@ -1,0 +1,47 @@
+<html>
+<head>
+	<script src="../matter.js"></script>
+	<script src="../polygons.js"></script>
+	<script src="../object.js"></script>
+	<script src="../world.js"></script>
+</head>
+<body style="color:white; background-color:black; margin:0; padding:0; text-align:center;">
+	<canvas id="canvas" width="600px" height="600px"></canvas>
+	<p>click to spawn a physics body</p>
+	<script type="text/javascript">
+		//example code here
+		var canvas = document.getElementById("canvas");
+		var context = canvas.getContext("2d");
+		var testWorld;
+		var objs = [];
+		
+		canvas.addEventListener("mousedown", function(e){ addBody(e.offsetX, e.offsetY); });
+		
+		function init(){
+			testWorld = world.withBounds(box.canvasBounds(canvas));
+			addBody(300, 300);
+		}
+		function update(){
+			testWorld.update(16.66667);
+			draw();
+			window.requestAnimationFrame(update);
+		}
+		function draw(){
+			context.fillStyle = "#333";
+			context.fillRect(0, 0, canvas.width, canvas.height);
+			
+			testWorld.draw(context);
+		}
+		function addBody(x, y){
+			var b = destructable.default();
+			b.setPos(new vec2(x, y));
+			b.setAng(.1);
+			testWorld.add(b);
+			objs.push(b);
+		}
+		
+		init();
+		update();
+	</script>
+</body>
+</html>
