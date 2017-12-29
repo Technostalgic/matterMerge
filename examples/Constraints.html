@@ -7,9 +7,8 @@
 </head>
 <body style="color:white; background-color:black; margin:0; padding:0; text-align:center;">
 	<canvas id="canvas" width="600px" height="600px"></canvas>
-	<p>click to spawn a physics body</p>
+	<p>click and drag onto a physics object to create a constraint</p>
 	<script type="text/javascript">
-		//example code here
 		var canvas = document.getElementById("canvas");
 		var context = canvas.getContext("2d");
 		var testWorld;
@@ -17,14 +16,16 @@
 		var objects = [];
 		var constraints = [];
 		var startDrag = null;
+		var endDrag = new vec2();
 		
 		canvas.addEventListener("mousedown", mousedown);
+		canvas.addEventListener("mousemove", mousemove);
 		canvas.addEventListener("mouseup", mouseup);
 		
 		function init(){
 			testWorld = world.withBounds(box.canvasBounds(canvas), false);
 			testWorld.removeTerrain(testWorld.terrain[2]);
-			addBody(300, 0);
+			addBody();
 		}
 		function update(){
 			if(canUpdate)
@@ -35,7 +36,7 @@
 			for(var i = objects.length - 1; i >= 0; i--){
 				if(objects[i].getPos().y >= 600){
 					testWorld.remove(objects[i]);
-					addBody(Math.random() * 500 + 50, 0);
+					addBody();
 					objects.splice(i, 1);
 				}
 			}
@@ -44,11 +45,25 @@
 			context.fillStyle = "#333";
 			context.fillRect(0, 0, canvas.width, canvas.height);
 			
+			
 			testWorld.draw(context);
+			
+			// draw constraint that user is about to create
+			if(startDrag){
+				ray.fromPoints(startDrag, endDrag).draw(context, "#0F0", 1);
+			}
+			
+			//draw constaints
+			for(var i = constraints.length - 1; i >= 0; i--){
+				var tposA = constraints[i].bodyA ? vec2.fromAnonObj(constraints[i].bodyA.position).plus(constraints[i].pointA) : constraints[i].pointA;
+				var tposB = constraints[i].bodyB ? vec2.fromAnonObj(constraints[i].bodyB.position).plus(constraints[i].pointB) : constraints[i].pointB;
+				ray.fromPoints(tposA, tposB).draw(context, "#0F0", 2);
+			}
 		}
-		function addBody(x, y){
+		function addBody(){
+			var pos = new vec2(Math.random() * 500 + 50, 0);
 			var b = object.default();
-			b.setPos(new vec2(x, y));
+			b.setPos(pos);
 			testWorld.add(b);
 			objects.push(b);
 		}
@@ -57,11 +72,19 @@
 			canUpdate = false;
 			startDrag = new vec2(e.offsetX, e.offsetY);
 		}
+		function mousemove(e){
+			endDrag = new vec2(e.offsetX, e.offsetY);
+		}
 		function mouseup(e){
 			canUpdate = true;
-			var endDrag = new vec2(e.offsetX, e.offsetY);
+			endDrag = new vec2(e.offsetX, e.offsetY);
 			
-			constraints.push(testWorld.createConstraint(startDrag, endDrag));
+			var c = testWorld.createConstraint(startDrag, endDrag);
+			if(c) {
+				constraints.push(c);
+				addBody();
+			}
+			startDrag = null;
 		}
 		
 		init();
