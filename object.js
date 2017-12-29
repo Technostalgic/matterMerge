@@ -33,6 +33,7 @@ class object {
 	constructor(){
 		this.composite = null;
 		this.inWorld = false;
+		this.parentWorld = null;
 	}
 	
 	getAllBodies(){
@@ -49,6 +50,10 @@ class object {
 		if(tpos) this.setPos(tpos);
 		return this;
 	}
+	addBody(body){
+		if(this.composite)
+			Matter.Composite.addBody(this.composite, body);
+	}
 	
 	setChildrenParent(){
 		// set gameObject parent of bodies to this
@@ -62,11 +67,21 @@ class object {
 		this.composite.gameObject = this;
 	}
 	
-	preAdd(){
+	worldAdd(world){
+		if(this.inWorld) return;
+		world.add(this);
+	}
+	worldRemove(){
+		if(!this.inWorld) return;
+		this.parentWorld.remove(this);
+	}
+	preAdd(world){
 		this.setChildrenParent();
+		this.parentWorld = world;
 		this.inWorld = true;
 	}
 	preRemove(){
+		this.parentWorld = null;
 		this.inWorld = false;
 	}
 	
@@ -207,7 +222,14 @@ class object {
 		
 		return r;
 	}
-
+	static concat(objs = []){
+		// creates a compund object out of a given array of objects
+		var r = object.empty();
+		for(var i = objs.length; i >= 0; i--)
+			Matter.Composite.add(r.composite, objs[i].composite);
+		return r;
+	}
+	
 	static composite_fromBody(body){
 		var r = Matter.Composite.create();
 		Matter.Composite.addBody(r, body);
@@ -222,17 +244,25 @@ class object {
 class destructable extends object{
 	constructor(){
 		super();
-		this.col = "#000";
+		this.threshold = 5;
 	}
 	
 	update(ts){
-		var acc = this.getBodyAcceleration(this.getFirstBody());
-		if(acc.distance() > 0.1)
-			console.log(acc.distance());
-		var emph = acc.distance() * 200;
-		this.col = "rgb("+ emph +","+ emph +","+ emph +")";
+		var acc = this.getBodyAcceleration();
+		if(acc.distance() > this.threshold)
+			this.destroy();
 		
 		this.trackPreviousVelocities();
+	}
+	
+	destroy(){
+		this.shatterBody();
+		this.worldRemove();
+	}
+	shatterBody(body, expansion = 0){
+		if(!body) body = this.getFirstBody();
+		
+		var container = object.empty;
 	}
 	
 	getBodyAcceleration(body){

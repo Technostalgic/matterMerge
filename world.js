@@ -30,7 +30,7 @@ class world{
 	}
 	
 	add(obj){
-		obj.preAdd();
+		obj.preAdd(this);
 		this.objList.push(obj);
 		Matter.World.addComposite(this.physWorld, obj.composite);
 	}
