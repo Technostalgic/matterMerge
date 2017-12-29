@@ -92,9 +92,15 @@ class world{
 		Matter.World.addConstraint(this.physWorld, cstr);
 		return cstr;
 	}
-	createWorldConstraint(target, pointA, pointB){
-		// creates a constraint from target at pointA to the world's background at pointB
-		
+	createWorldConstraint(target, offset, pointB){
+		// creates a constraint from target with offset to the world's background at pointB
+		var cstr = Matter.Constraint.create({
+			bodyA: target,
+			pointA: offset,
+			pointB: pointB
+		});
+		Matter.World.addConstraint(this.physWorld, cstr);
+		return cstr;
 	}
 	
 	draw(ctx){
