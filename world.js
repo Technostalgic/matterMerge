@@ -10,6 +10,10 @@ class world{
 		this.objList = [];
 	}
 	
+	getAllBodies(){
+		return Matter.Composite.allBodies(this.physWorld);
+	}
+	
 	getTimescale(){
 		return this.physEngine.timing.timeScale;
 	}
@@ -32,7 +36,7 @@ class world{
 	}
 	remove(obj){
 		obj.preRemove();
-		Matter.World.remove(this.physWorld, obj);
+		Matter.World.remove(this.physWorld, obj.composite);
 		this.objList.splice(this.objList.indexOf(obj), 1);
 	}
 	
@@ -43,8 +47,54 @@ class world{
 	}
 	removeTerrain(obj){
 		obj.preRemove();
-		Matter.World.remove(this.physWorld, obj);
-		this.terrain.splice(this.objList.indexOf(obj), 1);
+		Matter.World.remove(this.physWorld, obj.composite);
+		this.terrain.splice(this.terrain.indexOf(obj), 1);
+	}
+	
+	createConstraint(pointA, pointB, targetA, targetB){
+		// creates a contstraint from pointA on targetA to pointB
+		// if targetA or B are undefined, it will use whichever body is at the specified Point
+		// if no body is at the specified point, the constraint will be attached to the background
+		
+		var bodchecks = this.getAllBodies();
+		if(!targetA){
+			var ptargs = Matter.Query.point(bodchecks, pointA);
+			if(ptargs.length > 0)
+				targetA = ptargs[0];
+		}
+		if(!targetB){
+			var ptargs = Matter.Query.point(bodchecks, pointB);
+			if(ptargs.length > 0)
+				targetB = ptargs[0];
+		}
+		
+		// if no bodies are selected, don't create a constraint
+		if(!targetA && !targetB)
+			return null;
+		
+		// create constraint settings
+		var cset = {};
+		if(targetA) {
+			cset.bodyA = targetA;
+			var tposA = pointA.minus(vec2.fromAnonObj(targetA.position));
+			cset.pointA = tposA;
+		}
+		else cset.pointA = pointA;
+		if(targetB) {
+			cset.bodyB = targetB;
+			var tposB = pointB.minus(vec2.fromAnonObj(targetB.position));
+			cset.pointB = tposB;
+		}
+		else cset.pointB = pointB;
+		
+		// create and add constraint
+		var cstr = Matter.Constraint.create(cset);
+		Matter.World.addConstraint(this.physWorld, cstr);
+		return cstr;
+	}
+	createWorldConstraint(target, pointA, pointB){
+		// creates a constraint from target at pointA to the world's background at pointB
+		
 	}
 	
 	draw(ctx){

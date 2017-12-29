@@ -1,0 +1,71 @@
+<html>
+<head>
+	<script src="../matter.js"></script>
+	<script src="../polygons.js"></script>
+	<script src="../object.js"></script>
+	<script src="../world.js"></script>
+</head>
+<body style="color:white; background-color:black; margin:0; padding:0; text-align:center;">
+	<canvas id="canvas" width="600px" height="600px"></canvas>
+	<p>click to spawn a physics body</p>
+	<script type="text/javascript">
+		//example code here
+		var canvas = document.getElementById("canvas");
+		var context = canvas.getContext("2d");
+		var testWorld;
+		var canUpdate = true;
+		var objects = [];
+		var constraints = [];
+		var startDrag = null;
+		
+		canvas.addEventListener("mousedown", mousedown);
+		canvas.addEventListener("mouseup", mouseup);
+		
+		function init(){
+			testWorld = world.withBounds(box.canvasBounds(canvas), false);
+			testWorld.removeTerrain(testWorld.terrain[2]);
+			addBody(300, 0);
+		}
+		function update(){
+			if(canUpdate)
+				testWorld.update(16.66667);
+			draw();
+			window.requestAnimationFrame(update);
+			
+			for(var i = objects.length - 1; i >= 0; i--){
+				if(objects[i].getPos().y >= 600){
+					testWorld.remove(objects[i]);
+					addBody(Math.random() * 500 + 50, 0);
+					objects.splice(i, 1);
+				}
+			}
+		}
+		function draw(){
+			context.fillStyle = "#333";
+			context.fillRect(0, 0, canvas.width, canvas.height);
+			
+			testWorld.draw(context);
+		}
+		function addBody(x, y){
+			var b = object.default();
+			b.setPos(new vec2(x, y));
+			testWorld.add(b);
+			objects.push(b);
+		}
+		
+		function mousedown(e){
+			canUpdate = false;
+			startDrag = new vec2(e.offsetX, e.offsetY);
+		}
+		function mouseup(e){
+			canUpdate = true;
+			var endDrag = new vec2(e.offsetX, e.offsetY);
+			
+			constraints.push(testWorld.createConstraint(startDrag, endDrag));
+		}
+		
+		init();
+		update();
+	</script>
+</body>
+</html>
