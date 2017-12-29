@@ -9,30 +9,43 @@
 	<canvas id="canvas" width="600px" height="600px"></canvas>
 	<p>click and drag onto a physics object to create a constraint</p>
 	<script type="text/javascript">
-		var canvas = document.getElementById("canvas");
-		var context = canvas.getContext("2d");
-		var testWorld;
-		var canUpdate = true;
-		var objects = [];
-		var constraints = [];
-		var startDrag = null;
-		var endDrag = new vec2();
+		// used for rendering the example
+		var canvas = document.getElementById("canvas"),
+			context = canvas.getContext("2d");
 		
+		// the physics world and its contents
+		var testWorld,
+			objects = [],
+			constraints = [];
+		
+		// used as flags or to carry data from one update tick to another
+		var canUpdate = true,
+			startDrag = null,
+			endDrag = new vec2();
+		
+		// hooks the events to the corresponding functions that are defined below
 		canvas.addEventListener("mousedown", mousedown);
 		canvas.addEventListener("mousemove", mousemove);
 		canvas.addEventListener("mouseup", mouseup);
 		
 		function init(){
+			// initializes the testworld as a world with boundaries around the 
+			// canvas edges and removes the ground so that only walls are left
 			testWorld = world.withBounds(box.canvasBounds(canvas), false);
 			testWorld.removeTerrain(testWorld.terrain[2]);
+			
+			// adds a default physics object at a random location
 			addBody();
 		}
 		function update(){
+			// updates the physics world if the user is not dragging
 			if(canUpdate)
 				testWorld.update(16.66667);
+				
+			// renders the frame
 			draw();
-			window.requestAnimationFrame(update);
 			
+			// removes any physics object below 600 pixels and spawns a new one at the top
 			for(var i = objects.length - 1; i >= 0; i--){
 				if(objects[i].getPos().y >= 600){
 					testWorld.remove(objects[i]);
@@ -40,15 +53,20 @@
 					objects.splice(i, 1);
 				}
 			}
+			
+			// request a callback for the next update tick
+			window.requestAnimationFrame(update);
+			
 		}
 		function draw(){
+			//fill canvas with grey
 			context.fillStyle = "#333";
 			context.fillRect(0, 0, canvas.width, canvas.height);
 			
-			
+			//draw the physics world and objects
 			testWorld.draw(context);
 			
-			// draw constraint that user is about to create
+			// draw the constraint that user is trying to create
 			if(startDrag){
 				ray.fromPoints(startDrag, endDrag).draw(context, "#0F0", 1);
 			}
@@ -61,6 +79,7 @@
 			}
 		}
 		function addBody(){
+			//spawns a box at a random location on the top of the screen
 			var pos = new vec2(Math.random() * 500 + 50, 0);
 			var b = object.default();
 			b.setPos(pos);
@@ -69,24 +88,41 @@
 		}
 		
 		function mousedown(e){
+			// function to be called when the user presses the mouse button
+			// prevents physics world from updating, and sets the startDrag flag to 
+			// represent the cursor's position at the time of the mouse button press
 			canUpdate = false;
 			startDrag = new vec2(e.offsetX, e.offsetY);
 		}
 		function mousemove(e){
+			// function to be called when the user moves the mouse cursor
+			// sets endDrag the the cursor's current location
 			endDrag = new vec2(e.offsetX, e.offsetY);
 		}
 		function mouseup(e){
+			// function to be called when the user releases the mouse button
+			// allows the physics world to resume updating
 			canUpdate = true;
+			
+			// sets endDrag to represent the cursor's current location (probably not 
+			// necessary, but I do it in case the "mousemove" event hasn't been fired yet)
 			endDrag = new vec2(e.offsetX, e.offsetY);
 			
+			// defines the constraint that the user tried to create
 			var c = testWorld.createConstraint(startDrag, endDrag);
+			
+			// if the constraint was created successfully, add it to the constraint 
+			// list and spawn another physics object
 			if(c) {
 				constraints.push(c);
 				addBody();
 			}
+			
+			// reset the startDrag flag
 			startDrag = null;
 		}
 		
+		// called when the script is loaded by the browser:
 		init();
 		update();
 	</script>
