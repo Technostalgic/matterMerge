@@ -45,6 +45,14 @@ class vec2{
 			Math.abs(this.y - vect2.y) <= leniency);
 	}
 	
+	static average(points = []){
+		var p = new vec2();
+		for(var i = points.length - 1; i >= 0; i--)
+			p = p.plus(points[i]);
+		p = p.multiply(1 / points.length);
+		return p;
+	}
+	
 	direction(){
 		// returns the angle this vector is pointing in radians
 		return Math.atan2(this.y, this.x);

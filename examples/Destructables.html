@@ -35,9 +35,10 @@
 		function addBody(x, y){
 			var b = destructable.default();
 			b.setPos(new vec2(x, y));
-			b.setAng(.1);
+			b.setAng(Math.random() * Math.PI);
 			testWorld.add(b);
 			objs.push(b);
+			console.log(b);
 		}
 		
 		init();

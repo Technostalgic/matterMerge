@@ -213,7 +213,9 @@ class object {
 	}
 	
 	static empty(){
-		return new object();
+		var p = new object();
+		p.composite = Matter.Composite.create();
+		return p;
 	}
 	static default(){
 		var r = new object();
@@ -256,13 +258,58 @@ class destructable extends object{
 	}
 	
 	destroy(){
-		this.shatterBody();
+		var shards = destructable.getBodyShards(this.getFirstBody());
+		shards.worldAdd(this.parentWorld);
 		this.worldRemove();
 	}
-	shatterBody(body, expansion = 0){
+	static getBodyShards(body, keepVel = true){
 		if(!body) body = this.getFirstBody();
 		
-		var container = object.empty;
+		var container = object.empty();
+		
+		// the vector to set each shard's velocity to
+		var velset = new vec2();
+		if(keepVel){
+			if(body._prevVel) velset = vec2.fromAnonObj(body._prevVel);
+			else velset = vec2.fromAnonObj(body.velocity);
+		}
+		
+		//if the body is a compound body
+		var perBod = body.parts > 1;
+		
+		// add all the parts of the compund body to the container
+		if(perBod)
+			for(var i = body.parts.length - 1; i >= 0; i--)
+				container.addBody(body.parts[i]);
+		
+		// make a new body from each vertex and add it to the container
+		else{
+			
+			// center point of body
+			var bodcent = new vec2(
+				(body.bounds.max.x + body.bounds.min.x) / 2,
+				(body.bounds.max.y + body.bounds.min.y) / 2);
+			
+			// iterate through each vertext and create new body piece for each vertex
+			for(var i = body.vertices.length - 1; i >= 0; i --){
+				var v0 = body.vertices[i]
+				var v1 = body.vertices[wrapValue(i + 1, body.vertices.length)];
+				
+				//vertices of the body to create
+				var verts = [v0, v1, bodcent];
+				
+				var shardcent = vec2.average([v0, v1, bodcent]);
+				var bod = Matter.Bodies.fromVertices(shardcent.x, shardcent.y, verts);
+				container.addBody(bod);
+			}
+		}
+		
+		//set the velocity of the shards
+		var cbods = container.getAllBodies();
+		for(var i = cbods.length - 1; i >= 0; i--)
+			Matter.Body.setVelocity(cbods[i], velset.clone());
+		
+		return container;
 	}
 	
 	getBodyAcceleration(body){
