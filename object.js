@@ -246,7 +246,7 @@ class object {
 class destructable extends object{
 	constructor(){
 		super();
-		this.threshold = 5;
+		this.threshold = 8;
 	}
 	
 	update(ts){
@@ -316,53 +316,6 @@ class destructable extends object{
 		if(!body) body = this.getFirstBody();
 		if(!body._prevVel) return new vec2();
 		return vec2.fromAnonObj(body.velocity).minus(vec2.fromAnonObj(body._prevVel));
-	}
-	
-	collisionActive(thisBody, otherBody, e){
-	}
-	
-	draw(ctx){
-		if(!this.composite) return;
-		
-		var fillCol = this.col;
-		var lineCol = "#fff";
-		var lineWidth = 2;
-		
-		var bodies = this.getAllBodies();
-		for(var i0 = bodies.length - 1; i0 >= 0; i0--){
-			for(var i1 = bodies[i0].parts.length - 1; i1 >= 0; i1--){
-				ctx.fillStyle = fillCol;
-				ctx.strokeStyle = lineCol;
-				ctx.lineWidth = lineWidth;
-				ctx.beginPath();
-				
-				var start = bodies[i0].parts[i1].vertices[0];
-				ctx.moveTo(start.x, start.y);
-				for(var i2 = bodies[i0].parts[i1].vertices.length - 1; i2 >= 0; i2--){
-					var vtx = bodies[i0].parts[i1].vertices[i2];
-					ctx.lineTo(vtx.x, vtx.y);
-				}
-				ctx.closePath();
-				ctx.fill();
-			}
-		}
-		for(var i0 = bodies.length - 1; i0 >= 0; i0--){
-			for(var i1 = bodies[i0].parts.length - 1; i1 >= 0; i1--){
-				ctx.fillStyle = fillCol;
-				ctx.strokeStyle = lineCol;
-				ctx.lineWidth = lineWidth;
-				ctx.beginPath();
-				
-				var start = bodies[i0].parts[i1].vertices[0];
-				ctx.moveTo(start.x, start.y);
-				for(var i2 = bodies[i0].parts[i1].vertices.length - 1; i2 >= 0; i2--){
-					var vtx = bodies[i0].parts[i1].vertices[i2];
-					ctx.lineTo(vtx.x, vtx.y);
-				}
-				ctx.closePath();
-				ctx.stroke();
-			}
-		}
 	}
 	
 	static default(){
