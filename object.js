@@ -34,6 +34,7 @@ class object {
 		this.composite = null;
 		this.inWorld = false;
 		this.parentWorld = null;
+		this.constraintRefs = [];
 	}
 	
 	getAllBodies(){
@@ -50,9 +51,18 @@ class object {
 		if(tpos) this.setPos(tpos);
 		return this;
 	}
+	
 	addBody(body){
 		if(this.composite)
 			Matter.Composite.addBody(this.composite, body);
+	}
+	addConstraint(cstr){
+		if(this.composite)
+			Matter.Composite.addConstraint(this.composite, cstr);
+		this.constraintRefs.push(cstr);
+	}
+	addConstraintRef(cstr){
+		this.constraintRefs.push(cstr);
 	}
 	
 	setChildrenParent(){
@@ -81,8 +91,19 @@ class object {
 		this.inWorld = true;
 	}
 	preRemove(){
+		this.removeConstraints();
 		this.parentWorld = null;
 		this.inWorld = false;
+	}
+	removeConstraints(){
+		// UNTESTED
+		for(var i = this.constraintRefs.length - 1; i >= 0; i--){
+			var cstr = this.constraintRefs[i];
+			Matter.Composite.removeConstraint(cstr.bodyA.gameObject.composite, cstr);
+			Matter.Composite.removeConstraint(cstr.bodyB.gameObject.composite, cstr);
+			Matter.World.removeConstraint(this.parentWorld, cstr);
+		}
+		this.constraintRefs = [];
 	}
 	
 	setStatic(isstatic = true){

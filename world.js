@@ -89,6 +89,8 @@ class world{
 		
 		// create and add constraint
 		var cstr = Matter.Constraint.create(cset);
+		if(targetA) targetA.gameObject.addConstraintRef(cstr);
+		if(targetB) targetB.gameObject.addConstraintRef(cstr);
 		Matter.World.addConstraint(this.physWorld, cstr);
 		return cstr;
 	}
@@ -99,6 +101,7 @@ class world{
 			pointA: offset,
 			pointB: pointB
 		});
+		target.gameObject.addConstraintRef(cstr);
 		Matter.World.addConstraint(this.physWorld, cstr);
 		return cstr;
 	}
