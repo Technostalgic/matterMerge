@@ -105,6 +105,14 @@ class world{
 		Matter.World.addConstraint(this.physWorld, cstr);
 		return cstr;
 	}
+	removeConstraint(cstr){
+		if(Matter.World.remove(physWorld, cstr).isModified) return true;
+		if(cstr.bodyA)
+			if(Matter.Composite.remove(cstr.bodyA.gameObject.composite, cstr).isModified) return true;
+		if(cstr.bodyB)
+			if(Matter.Composite.remove(cstr.bodyB.gameObject.composite, cstr).isModified) return true;
+		return false;
+	}
 	
 	draw(ctx){
 		for(var i = this.objList.length - 1; i >= 0; i--)

@@ -59,10 +59,22 @@ class object {
 	addConstraint(cstr){
 		if(this.composite)
 			Matter.Composite.addConstraint(this.composite, cstr);
-		this.constraintRefs.push(cstr);
+		this.addConstraintRef(cstr);
 	}
 	addConstraintRef(cstr){
 		this.constraintRefs.push(cstr);
+	}
+	removeConstraintDirect(cstr){
+		// only use this function to remove a constraint if you know the 
+		// constraint a child of this object's composite, otherwise
+		// use world.removeConstraint()
+		Matter.Composite.remove(this.composite, cstr);
+		this.removeConstraintRef(cstr);
+	}
+	removeConstraintRef(cstr){
+		var si = this.constraintRefs.indexOf(cstr);
+		if(si > 0)
+			this.constraintRefs.splice(si, 1);
 	}
 	
 	setChildrenParent(){
@@ -91,17 +103,18 @@ class object {
 		this.inWorld = true;
 	}
 	preRemove(){
-		this.removeConstraints();
+		this.removeAllConstraints();
 		this.parentWorld = null;
 		this.inWorld = false;
 	}
-	removeConstraints(){
-		// UNTESTED
+	removeAllConstraints(){
 		for(var i = this.constraintRefs.length - 1; i >= 0; i--){
 			var cstr = this.constraintRefs[i];
-			Matter.Composite.removeConstraint(cstr.bodyA.gameObject.composite, cstr);
-			Matter.Composite.removeConstraint(cstr.bodyB.gameObject.composite, cstr);
-			Matter.World.removeConstraint(this.parentWorld, cstr);
+			if(Matter.World.remove(this.parentWorld.physWorld, cstr).isModified) continue;
+			if(cstr.bodyA)
+				if(Matter.Composite.remove(cstr.bodyA.gameObject.composite, cstr).isModified) continue;
+			if(cstr.bodyB)
+				if(Matter.Composite.remove(cstr.bodyB.gameObject.composite, cstr).isModified) continue;
 		}
 		this.constraintRefs = [];
 	}

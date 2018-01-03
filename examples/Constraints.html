@@ -42,6 +42,8 @@
 			if(canUpdate)
 				testWorld.update(16.66667);
 				
+			constraints = Matter.Composite.allConstraints(testWorld.physWorld);
+			
 			// renders the frame
 			draw();
 			
